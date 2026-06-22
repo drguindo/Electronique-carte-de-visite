@@ -1,0 +1,8 @@
+# Fichiers système (Windows / macOS)
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Fichiers temporaires / captures d'écran de test
+_apercu*.png
+*.tmp
