@@ -24,7 +24,53 @@
   <meta charset="UTF-8" />
   <!-- Indispensable pour le rendu "Mobile First" : la page s'adapte à la largeur de l'écran -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dr GUINDO Aly Abdoulaye — Carte de visite</title>
+  <title>Dr Aly Abdoulaye GUINDO — Carte de visite</title>
+
+  <!-- Référencement (SEO) : description sobre et registre scientifique -->
+  <meta name="description" content="Carte de visite numérique du Dr Aly Abdoulaye GUINDO — chirurgien maxillo-facial et stomatologue (Hôpital Sominé Dolo, Mopti, Mali) et doctorant en informatique médicale (EDSTM/USTTB). Coordonnées, QR code vCard et lien portfolio." />
+  <meta name="author" content="Aly Abdoulaye GUINDO" />
+  <link rel="canonical" href="https://drguindo.github.io/Electronique-carte-de-viste/" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="profile" />
+  <meta property="og:locale" content="fr_FR" />
+  <meta property="og:title" content="Dr Aly Abdoulaye GUINDO — Carte de visite" />
+  <meta property="og:description" content="Chirurgien maxillo-facial &amp; stomatologue (Hôpital Sominé Dolo, Mopti) · Doctorant en informatique médicale (EDSTM/USTTB)." />
+  <meta property="og:url" content="https://drguindo.github.io/Electronique-carte-de-viste/" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Dr Aly Abdoulaye GUINDO — Carte de visite" />
+  <meta name="twitter:description" content="Chirurgien maxillo-facial &amp; stomatologue · Doctorant en informatique médicale (EDSTM/USTTB)." />
+
+  <!-- Données structurées JSON-LD (schema.org/Person) — faits vérifiés uniquement -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": "Dr Aly Abdoulaye GUINDO",
+    "givenName": "Aly Abdoulaye",
+    "familyName": "GUINDO",
+    "jobTitle": ["Chirurgien maxillo-facial et stomatologue", "Doctorant en informatique médicale"],
+    "url": "https://drguindo.github.io/Mon_PortFolio_2025/",
+    "email": "mailto:dralyab@gmail.com",
+    "telephone": "+22376240641",
+    "identifier": {
+      "@type": "PropertyValue",
+      "propertyID": "ORCID",
+      "value": "0000-0002-4363-7277"
+    },
+    "worksFor": {
+      "@type": "Hospital",
+      "name": "Hôpital Sominé Dolo de Mopti",
+      "address": { "@type": "PostalAddress", "addressLocality": "Mopti", "addressCountry": "ML" }
+    },
+    "sameAs": [
+      "https://orcid.org/0000-0002-4363-7277",
+      "https://drguindo.github.io/Mon_PortFolio_2025/"
+    ]
+  }
+  </script>
 
   <!-- Police moderne et lisible (Inter). Si pas d'Internet, le navigateur utilisera la police système. -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -119,6 +165,15 @@
       font-size: 0.85rem;
       font-weight: 400;
       opacity: 0.8;
+    }
+    /* Accroche courte (slogan sobre) */
+    .entete .accroche {
+      margin-top: 12px;
+      font-size: 0.82rem;
+      font-weight: 400;
+      font-style: italic;
+      opacity: 0.92;
+      line-height: 1.4;
     }
     /* Bloc des affiliations (hôpital + école doctorale) */
     .entete .affiliations {
@@ -292,13 +347,15 @@
           <path d="M14 2h-4a1 1 0 0 0-1 1v6H3a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1h6v6a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1v-6h6a1 1 0 0 0 1-1v-4a1 1 0 0 0-1-1h-6V3a1 1 0 0 0-1-1z"/>
         </svg>
       </div>
-      <h1 id="nom-complet">Nom</h1>
-      <p class="titre-principal" id="titre-principal">Titre principal</p>
-      <p class="titre-secondaire" id="titre-secondaire">Titre secondaire</p>
+      <h1 id="nom-complet">Dr Aly Abdoulaye GUINDO</h1>
+      <p class="titre-principal" id="titre-principal">Chirurgien maxillo-facial &amp; stomatologue</p>
+      <p class="titre-secondaire" id="titre-secondaire">Doctorant en informatique médicale (EDSTM / USTTB)</p>
+      <!-- Accroche courte (remplie par JS) -->
+      <p class="accroche" id="accroche">Santé numérique pour la continuité des soins en zone de crise</p>
       <!-- Affiliations professionnelle et académique (remplies par JS) -->
       <div class="affiliations">
-        <p id="affiliation-hopital">🏥 Praticien Hospitalier</p>
-        <p id="affiliation-ecole">🎓 Doctorant</p>
+        <p id="affiliation-hopital">🏥 Chef d'unité de chirurgie maxillo-faciale &amp; stomatologie – Hôpital Sominé Dolo de Mopti</p>
+        <p id="affiliation-ecole">🎓 École Doctorale des Sciences et Technologies du Mali (EDSTM)</p>
       </div>
     </header>
 
@@ -313,7 +370,7 @@
           </span>
           <span class="infos-contact">
             <span class="label">Téléphone 1</span>
-            <a id="lien-tel1" href="#">+223 ...</a>
+            <a id="lien-tel1" href="tel:+22376240641">+223 76 24 06 41</a>
           </span>
         </li>
         <li>
@@ -322,7 +379,7 @@
           </span>
           <span class="infos-contact">
             <span class="label">Téléphone 2</span>
-            <a id="lien-tel2" href="#">+223 ...</a>
+            <a id="lien-tel2" href="tel:+22366240641">+223 66 24 06 41</a>
           </span>
         </li>
         <li>
@@ -331,7 +388,16 @@
           </span>
           <span class="infos-contact">
             <span class="label">Email</span>
-            <a id="lien-email" href="#">email</a>
+            <a id="lien-email" href="mailto:dralyab@gmail.com">dralyab@gmail.com</a>
+          </span>
+        </li>
+        <li>
+          <span class="puce" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm-1.7 14.5H8.2V9.6h2.1v6.9zM9.2 8.7a1.2 1.2 0 1 1 0-2.4 1.2 1.2 0 0 1 0 2.4zm7.6 7.8h-2.1v-3.4c0-.9-.3-1.5-1.1-1.5-.6 0-1 .4-1.1.9 0 .2-.1.4-.1.6v3.4h-2.1V9.6h2.1v.9a2.1 2.1 0 0 1 1.9-1c1.4 0 2.5.9 2.5 2.9v4.1z"/></svg>
+          </span>
+          <span class="infos-contact">
+            <span class="label">ORCID</span>
+            <a id="lien-orcid" href="https://orcid.org/0000-0002-4363-7277" target="_blank" rel="noopener">0000-0002-4363-7277</a>
           </span>
         </li>
       </ul>
@@ -381,15 +447,19 @@
       prenom:           "Aly Abdoulaye",
       nom:              "GUINDO",
       prefixe:          "Dr",                                   // Titre de civilité (Dr, Pr, M., Mme...)
-      titrePrincipal:   "Chirurgien Maxillo-Facial & Stomatologiste",
-      titreSecondaire:  "Doctorant en Informatique Médicale",
-      // Affiliations affichées sur la carte (et enregistrées dans le contact) :
+      titrePrincipal:   "Chirurgien maxillo-facial & stomatologue",
+      titreSecondaire:  "Doctorant en informatique médicale (EDSTM / USTTB)",
+      // Accroche courte, sobre et non commerciale :
+      accroche:         "Santé numérique pour la continuité des soins en zone de crise",
+      // Rôle hospitalier et affiliation académique (affichés + enregistrés dans le contact) :
+      roleHopital:      "Chef d'unité de chirurgie maxillo-faciale & stomatologie",
       hopital:          "Hôpital Sominé Dolo de Mopti",
       ecoleDoctorale:   "École Doctorale des Sciences et Technologies du Mali (EDSTM)",
       telephone1:       "+223 76 24 06 41",
       telephone2:       "+223 66 24 06 41",
       email:            "dralyab@gmail.com",
-      portfolio:        "https://drguindo.github.io/Mon_PortFolio_2025/"
+      portfolio:        "https://drguindo.github.io/Mon_PortFolio_2025/",
+      orcid:            "https://orcid.org/0000-0002-4363-7277"
     };
 
     /* ====================================================================
@@ -425,8 +495,10 @@
         "TEL;TYPE=CELL:" + nettoyerTelephone(INFOS.telephone2),
         // Email
         "EMAIL;TYPE=INTERNET:" + INFOS.email,
-        // Site web / portfolio
+        // Site web / portfolio (URL principale)
         "URL:" + INFOS.portfolio,
+        // Profil ORCID (URL secondaire)
+        "URL:" + INFOS.orcid,
         "END:VCARD"
       ];
 
@@ -444,11 +516,19 @@
       document.getElementById("titre-principal").textContent = INFOS.titrePrincipal;
       document.getElementById("titre-secondaire").textContent = INFOS.titreSecondaire;
 
-      // Affiliations (hôpital + école doctorale) avec leurs icônes
+      // Accroche courte
+      document.getElementById("accroche").textContent = INFOS.accroche;
+
+      // Affiliations (rôle hospitalier + école doctorale) avec leurs icônes
       document.getElementById("affiliation-hopital").textContent =
-        "🏥 Praticien Hospitalier – " + INFOS.hopital;
+        "🏥 " + INFOS.roleHopital + " – " + INFOS.hopital;
       document.getElementById("affiliation-ecole").textContent =
-        "🎓 Doctorant – " + INFOS.ecoleDoctorale;
+        "🎓 " + INFOS.ecoleDoctorale;
+
+      // Lien ORCID
+      const orcid = document.getElementById("lien-orcid");
+      orcid.textContent = INFOS.orcid.replace("https://orcid.org/", "");
+      orcid.href = INFOS.orcid;
 
       // Téléphone 1 (texte affiché + lien cliquable qui ouvre l'appli téléphone)
       const tel1 = document.getElementById("lien-tel1");
