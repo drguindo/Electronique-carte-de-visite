@@ -5,7 +5,7 @@ gratuitement sur **GitHub Pages**. Elle affiche les coordonnées du Dr GUINDO,
 génère un **QR code** contenant une fiche contact (vCard) et permet de
 **télécharger le contact** (`.vcf`) en un clic.
 
-> 🔗 **Adresse en ligne :** https://drguindo.github.io/Electronique-carte-de-viste/
+> 🔗 **Adresse en ligne :** https://drguindo.github.io/Electronique-carte-de-visite/
 
 ---
 
