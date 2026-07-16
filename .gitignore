@@ -6,3 +6,6 @@ desktop.ini
 # Fichiers temporaires / captures d'écran de test
 _apercu*.png
 *.tmp
+
+# Dossiers de cache
+.npm-cache/
