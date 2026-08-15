@@ -262,12 +262,16 @@
       const cardW = W * 0.84;
       const pad = W * 0.06;
       const qrSize = cardW - pad * 2;
+      // Deux lignes de titre : le DOCTORAT en haut (mis en avant), la CHIRURGIE en bas.
+      const doctorat = INFOS.titreSecondaire.split(" (")[0]; // "Doctorant en informatique médicale"
+      const chirurgie = INFOS.titrePrincipal;                // "Chirurgien maxillo-facial & stomatologue"
       const nameSize = ajusterPolice(ctx, nomComplet(), W * 0.055, cardW - pad * 2, true);
-      const subSize = ajusterPolice(ctx, INFOS.titrePrincipal, W * 0.034, cardW - pad * 2, false);
+      const docSize  = ajusterPolice(ctx, doctorat, W * 0.039, cardW - pad * 2, true);
+      const subSize  = ajusterPolice(ctx, chirurgie, W * 0.032, cardW - pad * 2, false);
       const hintSize = W * 0.032;
       const gap = W * 0.045;
 
-      const cardH = pad + nameSize + gap * 0.4 + subSize + gap + qrSize + gap * 0.8 + hintSize + pad;
+      const cardH = pad + nameSize + gap * 0.4 + docSize + gap * 0.3 + subSize + gap + qrSize + gap * 0.8 + hintSize + pad;
       const cardX = (W - cardW) / 2;
       const cardY = (H - cardH) / 2 + H * 0.02; // légèrement sous le centre (sous l'horloge)
 
@@ -282,10 +286,17 @@
       ctx.font = "bold " + nameSize + "px Arial, sans-serif";
       ctx.fillText(nomComplet(), W / 2, y);
 
-      y += gap * 0.4 + subSize;
+      // Ligne du haut : le DOCTORAT (mis en avant, en bleu et en gras)
+      y += gap * 0.4 + docSize;
+      ctx.fillStyle = "#1A5276";
+      ctx.font = "bold " + docSize + "px Arial, sans-serif";
+      ctx.fillText(doctorat, W / 2, y);
+
+      // Ligne du dessous : la CHIRURGIE (en gris)
+      y += gap * 0.3 + subSize;
       ctx.fillStyle = "#2C3E50";
       ctx.font = subSize + "px Arial, sans-serif";
-      ctx.fillText(INFOS.titrePrincipal, W / 2, y);
+      ctx.fillText(chirurgie, W / 2, y);
 
       y += gap;
       if (qrCanvas) {
