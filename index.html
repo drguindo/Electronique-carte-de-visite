@@ -311,6 +311,11 @@
       color: var(--bleu-medical);
       border-color: var(--bleu-medical);
     }
+    /* Bouton WhatsApp (vert officiel de la marque) */
+    .btn-whatsapp {
+      background-color: #25D366;
+      color: var(--blanc);
+    }
 
     /* ---- PIED DE PAGE ---- */
     .pied {
@@ -410,11 +415,21 @@
 
       <!-- BOUTONS D'ACTION -->
       <div class="actions">
-        <!-- Bouton principal : télécharge le fichier .vcf (contact) -->
-        <button class="btn btn-principal" id="btn-telecharger" type="button">
-          📥 Télécharger la carte (.vcf)
+        <!-- Action principale : partager la carte via le menu natif du téléphone
+             (WhatsApp, SMS, Bluetooth, AirDrop, e-mail...). Le destinataire n'a
+             rien à scanner ni à installer : il reçoit directement le lien. -->
+        <button class="btn btn-principal" id="btn-partager" type="button">
+          📤 Partager ma carte
         </button>
-        <!-- Bouton secondaire : ouvre le portfolio dans un nouvel onglet -->
+        <!-- Envoie le lien de la carte via WhatsApp (message pré-rempli) -->
+        <a class="btn btn-whatsapp" id="lien-whatsapp" href="#" target="_blank" rel="noopener noreferrer">
+          💬 Envoyer via WhatsApp
+        </a>
+        <!-- Télécharge le fichier .vcf (fiche contact) -->
+        <button class="btn btn-secondaire" id="btn-telecharger" type="button">
+          📥 Enregistrer mon contact (.vcf)
+        </button>
+        <!-- Ouvre le portfolio dans un nouvel onglet -->
         <a class="btn btn-secondaire" id="lien-portfolio" href="#" target="_blank" rel="noopener noreferrer">
           🌐 Voir mon portfolio
         </a>
@@ -459,7 +474,10 @@
       telephone2:       "+223 66 24 06 41",
       email:            "dralyab@gmail.com",
       portfolio:        "https://drguindo.github.io/Mon_PortFolio_2025/",
-      orcid:            "https://orcid.org/0000-0002-4363-7277"
+      orcid:            "https://orcid.org/0000-0002-4363-7277",
+      // Adresse (URL) de CETTE carte en ligne — utilisée par les boutons de partage.
+      // Si vous changez de nom de dépôt/hébergement, mettez cette valeur à jour.
+      carteUrl:         "https://drguindo.github.io/Electronique-carte-de-visite/"
     };
 
     /* ====================================================================
@@ -548,6 +566,11 @@
       // Lien portfolio (s'ouvre dans un nouvel onglet, déjà configuré dans le HTML)
       document.getElementById("lien-portfolio").href = INFOS.portfolio;
 
+      // Lien WhatsApp : ouvre WhatsApp avec un message pré-rempli contenant
+      // le lien de la carte. La personne choisit le contact et envoie.
+      document.getElementById("lien-whatsapp").href =
+        "https://wa.me/?text=" + encodeURIComponent(messagePartage() + " : " + INFOS.carteUrl);
+
       // Met à jour le titre de l'onglet du navigateur
       document.title = nomComplet + " — Carte de visite";
     }
@@ -609,6 +632,52 @@
     }
 
     /* ====================================================================
+       FONCTION : construit le petit message d'accompagnement du partage.
+       ==================================================================== */
+    function messagePartage() {
+      const nomComplet = INFOS.prefixe + " " + INFOS.prenom + " " + INFOS.nom;
+      return "Voici ma carte de visite numérique — " + nomComplet;
+    }
+
+    /* ====================================================================
+       FONCTION : partage la carte via le menu natif du téléphone.
+       - Sur mobile : ouvre le menu de partage (WhatsApp, SMS, Bluetooth,
+         AirDrop, e-mail...). La personne reçoit directement le LIEN de la
+         carte : rien à scanner, rien à installer.
+       - Sur ordinateur (pas de menu natif) : copie le lien dans le
+         presse-papiers et le confirme brièvement sur le bouton.
+       ==================================================================== */
+    async function partagerCarte() {
+      const donnees = {
+        title: INFOS.prefixe + " " + INFOS.prenom + " " + INFOS.nom,
+        text: messagePartage(),
+        url: INFOS.carteUrl
+      };
+
+      // 1) Menu de partage natif (disponible sur la plupart des téléphones)
+      if (navigator.share) {
+        try {
+          await navigator.share(donnees);
+        } catch (e) {
+          // L'utilisateur a simplement annulé le partage : on ne fait rien.
+        }
+        return;
+      }
+
+      // 2) Repli : copie le lien dans le presse-papiers (ordinateurs)
+      const btn = document.getElementById("btn-partager");
+      try {
+        await navigator.clipboard.writeText(INFOS.carteUrl);
+        const texteInitial = btn.textContent;
+        btn.textContent = "✅ Lien copié !";
+        setTimeout(function () { btn.textContent = texteInitial; }, 2000);
+      } catch (e) {
+        // 3) Dernier repli : on affiche le lien à copier manuellement
+        window.prompt("Copiez ce lien pour partager votre carte :", INFOS.carteUrl);
+      }
+    }
+
+    /* ====================================================================
        INITIALISATION : exécuté une fois la page chargée.
        ==================================================================== */
     document.addEventListener("DOMContentLoaded", function () {
@@ -619,6 +688,11 @@
       document
         .getElementById("btn-telecharger")
         .addEventListener("click", telechargerVCard);
+
+      // 4) Branche le bouton "Partager ma carte" (menu natif du téléphone)
+      document
+        .getElementById("btn-partager")
+        .addEventListener("click", partagerCarte);
     });
   </script>
 </body>
