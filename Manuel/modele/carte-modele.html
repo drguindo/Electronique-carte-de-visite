@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<!--
+  ============================================================================
+  MODÈLE DE CARTE DE VISITE NUMÉRIQUE — À DUPLIQUER POUR CHAQUE PERSONNE
+  ============================================================================
+  Ce fichier est un MODÈLE. Pour créer la carte d'une personne :
+    1. Copiez ce fichier dans :  cartes/<nom-prenom>/index.html
+    2. Remplissez UNIQUEMENT l'objet "INFOS" (tout en bas, dans le <script>).
+       Laissez vide ("") tout champ que la personne n'a pas : il disparaît
+       automatiquement de la carte.
+    3. Remplissez aussi les balises marquées «...» dans le <head> (titre,
+       description, adresses "og:") — elles servent aux aperçus de partage.
+    4. Générez les icônes (icon-180/192/512.png) et le manifest de la personne
+       (voir le dossier "Manuel").
+
+  FONCTIONNALITÉS (identiques à la carte d'origine) :
+    - Affichage des coordonnées (téléphone, email, ORCID, LinkedIn...).
+    - QR code contenant une vCard (le scan propose "Ajouter aux contacts").
+    - Bouton "Partager" qui envoie le FICHIER .vcf (marche hors-ligne).
+    - Bouton WhatsApp (message pré-rempli).
+    - Téléchargement du contact (.vcf).
+    - Installable comme une application (PWA) sur iPhone et Android.
+
+  DÉPENDANCE : la librairie QR est PARTAGÉE à la racine du dépôt.
+    Ce modèle la charge via "../../qrcode.min.js", ce qui suppose que la carte
+    est rangée deux niveaux sous la racine :  <racine>/cartes/<nom-prenom>/
+    Si vous rangez la carte ailleurs, adaptez ce chemin.
+  ============================================================================
+-->
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- >>> À REMPLIR : titre de l'onglet (Prénom NOM — Carte de visite) -->
+  <title>«Prénom NOM» — Carte de visite</title>
+
+  <!-- >>> À REMPLIR : description courte pour le référencement -->
+  <meta name="description" content="Carte de visite numérique de «Prénom NOM» — «titre / fonction»." />
+  <meta name="author" content="«Prénom NOM»" />
+
+  <!-- ICÔNE PERSONNALISÉE + AJOUT À L'ÉCRAN D'ACCUEIL (iPhone & Android) -->
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+  <link rel="apple-touch-icon" href="icon-180.png" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <meta name="theme-color" content="#1A5276" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <!-- >>> À REMPLIR : nom court affiché sous l'icône (ex: "Dr NOM") -->
+  <meta name="apple-mobile-web-app-title" content="«Nom court»" />
+
+  <!-- Aperçu lors du partage (WhatsApp, réseaux) — >>> À REMPLIR les URL -->
+  <meta property="og:type" content="profile" />
+  <meta property="og:locale" content="fr_FR" />
+  <meta property="og:title" content="«Prénom NOM» — Carte de visite" />
+  <meta property="og:description" content="«titre / fonction»." />
+  <meta property="og:url" content="«https://VOTRE-COMPTE.github.io/DEPOT/cartes/nom-prenom/»" />
+  <meta property="og:image" content="«https://VOTRE-COMPTE.github.io/DEPOT/cartes/nom-prenom/icon-512.png»" />
+
+  <!-- Police moderne (Inter). Sans Internet, la police système prend le relais. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ====================================================================
+       PALETTE DE COULEURS (modifiez ici pour changer le thème)
+       ==================================================================== */
+    :root {
+      --blanc: #FFFFFF;
+      --bleu-medical: #1A5276;
+      --bleu-clair: #2E86C1;
+      --gris-fonce: #2C3E50;
+      --gris-clair: #BDC3C7;
+      --gris-fond: #F4F6F7;
+      --ombre: 0 10px 30px rgba(26, 82, 118, 0.15);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background-color: var(--gris-fond);
+      color: var(--gris-fonce);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 24px 16px;
+      line-height: 1.5;
+    }
+
+    .carte {
+      background-color: var(--blanc);
+      width: 100%;
+      max-width: 500px;
+      border-radius: 20px;
+      box-shadow: var(--ombre);
+      overflow: hidden;
+    }
+
+    .entete {
+      background: linear-gradient(135deg, var(--bleu-medical), var(--bleu-clair));
+      color: var(--blanc);
+      text-align: center;
+      padding: 36px 24px 28px;
+    }
+
+    /* Pastille ronde (icône médicale OU photo de la personne) */
+    .icone-medicale {
+      width: 72px; height: 72px; margin: 0 auto 16px;
+      background-color: rgba(255, 255, 255, 0.15);
+      border: 2px solid rgba(255, 255, 255, 0.45);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .icone-medicale svg { width: 38px; height: 38px; }
+
+    /* Photo optionnelle (ronde) */
+    .photo {
+      width: 96px; height: 96px; margin: 0 auto 16px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid rgba(255, 255, 255, 0.6);
+      display: none; /* affichée par JS seulement si une photo est fournie */
+    }
+
+    .entete h1 { font-size: 1.45rem; font-weight: 700; letter-spacing: 0.2px; }
+    .entete .titre-principal { margin-top: 8px; font-size: 0.98rem; font-weight: 500; opacity: 0.95; }
+    .entete .titre-secondaire { margin-top: 2px; font-size: 0.85rem; font-weight: 400; opacity: 0.8; }
+    .entete .accroche { margin-top: 12px; font-size: 0.82rem; font-weight: 400; font-style: italic; opacity: 0.92; line-height: 1.4; }
+    .entete .affiliations {
+      margin-top: 14px; padding-top: 12px;
+      border-top: 1px solid rgba(255, 255, 255, 0.25);
+      display: flex; flex-direction: column; gap: 5px;
+    }
+    .entete .affiliations p { font-size: 0.8rem; font-weight: 400; line-height: 1.35; opacity: 0.9; }
+
+    .corps { padding: 26px 24px 30px; }
+
+    .coordonnees { list-style: none; margin-bottom: 24px; }
+    .coordonnees li {
+      display: flex; align-items: center; gap: 14px;
+      padding: 12px 4px; border-bottom: 1px solid var(--gris-clair);
+    }
+    .coordonnees li:last-child { border-bottom: none; }
+    .coordonnees .puce {
+      flex-shrink: 0; width: 40px; height: 40px; border-radius: 50%;
+      background-color: rgba(46, 134, 193, 0.12);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .coordonnees .puce svg { width: 20px; height: 20px; fill: var(--bleu-medical); }
+    .coordonnees .infos-contact { display: flex; flex-direction: column; }
+    .coordonnees .label {
+      font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px;
+      color: var(--bleu-clair); font-weight: 600;
+    }
+    .coordonnees a, .coordonnees span.valeur {
+      font-size: 0.98rem; font-weight: 500; color: var(--gris-fonce);
+      text-decoration: none; word-break: break-word;
+    }
+
+    .zone-qr { text-align: center; padding: 22px 0 6px; }
+    .zone-qr .legende { font-size: 0.82rem; color: var(--gris-fonce); opacity: 0.75; margin-bottom: 16px; }
+    #qrcode {
+      display: inline-flex; padding: 14px; background: var(--blanc);
+      border: 1px solid var(--gris-clair); border-radius: 16px;
+    }
+    #qrcode img, #qrcode canvas { display: block; width: 200px; height: 200px; }
+
+    .actions { margin-top: 28px; display: flex; flex-direction: column; gap: 12px; }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      width: 100%; padding: 15px 18px; border-radius: 12px;
+      font-size: 1rem; font-weight: 600; font-family: inherit;
+      text-decoration: none; cursor: pointer; border: 2px solid transparent;
+      transition: transform 0.08s ease, opacity 0.15s ease;
+    }
+    .btn:active { transform: scale(0.98); }
+    .btn-principal { background-color: var(--bleu-medical); color: var(--blanc); }
+    .btn-secondaire { background-color: var(--blanc); color: var(--bleu-medical); border-color: var(--bleu-medical); }
+    .btn-whatsapp { background-color: #25D366; color: var(--blanc); }
+
+    .pied { text-align: center; padding: 18px 24px 8px; font-size: 0.72rem; color: var(--gris-clair); }
+
+    @media (max-width: 480px) {
+      .entete h1 { font-size: 1.3rem; }
+      #qrcode img, #qrcode canvas { width: 180px; height: 180px; }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="carte">
+
+    <!-- EN-TÊTE : photo (optionnelle) OU icône médicale + nom + titres -->
+    <header class="entete">
+      <!-- Photo (affichée par JS seulement si INFOS.photo est renseigné) -->
+      <img class="photo" id="photo" alt="Photo" />
+      <!-- Icône médicale par défaut (masquée par JS si une photo est fournie) -->
+      <div class="icone-medicale" id="icone-medicale" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="white">
+          <path d="M14 2h-4a1 1 0 0 0-1 1v6H3a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1h6v6a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1v-6h6a1 1 0 0 0 1-1v-4a1 1 0 0 0-1-1h-6V3a1 1 0 0 0-1-1z"/>
+        </svg>
+      </div>
+      <h1 id="nom-complet">«Prénom NOM»</h1>
+      <p class="titre-principal" id="titre-principal"></p>
+      <p class="titre-secondaire" id="titre-secondaire"></p>
+      <p class="accroche" id="accroche"></p>
+      <div class="affiliations" id="affiliations">
+        <p id="affiliation-hopital"></p>
+        <p id="affiliation-ecole"></p>
+      </div>
+    </header>
+
+    <!-- CORPS : coordonnées + QR code + boutons -->
+    <section class="corps">
+      <ul class="coordonnees">
+        <!-- Téléphone 1 (obligatoire en général) -->
+        <li id="li-tel1">
+          <span class="puce" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.02-.24 11.36 11.36 0 0 0 3.57.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1 11.36 11.36 0 0 0 .57 3.57 1 1 0 0 1-.24 1.02l-2.2 2.2z"/></svg>
+          </span>
+          <span class="infos-contact">
+            <span class="label">Téléphone 1</span>
+            <a id="lien-tel1" href="#"></a>
+          </span>
+        </li>
+        <!-- Téléphone 2 (optionnel) -->
+        <li id="li-tel2">
+          <span class="puce" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.02-.24 11.36 11.36 0 0 0 3.57.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1 11.36 11.36 0 0 0 .57 3.57 1 1 0 0 1-.24 1.02l-2.2 2.2z"/></svg>
+          </span>
+          <span class="infos-contact">
+            <span class="label">Téléphone 2</span>
+            <a id="lien-tel2" href="#"></a>
+          </span>
+        </li>
+        <!-- Email -->
+        <li id="li-email">
+          <span class="puce" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 4-8 5-8-5V6l8 5 8-5z"/></svg>
+          </span>
+          <span class="infos-contact">
+            <span class="label">Email</span>
+            <a id="lien-email" href="#"></a>
+          </span>
+        </li>
+        <!-- ORCID (optionnel) -->
+        <li id="li-orcid">
+          <span class="puce" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm-1.7 14.5H8.2V9.6h2.1v6.9zM9.2 8.7a1.2 1.2 0 1 1 0-2.4 1.2 1.2 0 0 1 0 2.4zm7.6 7.8h-2.1v-3.4c0-.9-.3-1.5-1.1-1.5-.6 0-1 .4-1.1.9 0 .2-.1.4-.1.6v3.4h-2.1V9.6h2.1v.9a2.1 2.1 0 0 1 1.9-1c1.4 0 2.5.9 2.5 2.9v4.1z"/></svg>
+          </span>
+          <span class="infos-contact">
+            <span class="label">ORCID</span>
+            <a id="lien-orcid" href="#" target="_blank" rel="noopener"></a>
+          </span>
+        </li>
+        <!-- LinkedIn (optionnel) -->
+        <li id="li-linkedin">
+          <span class="puce" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5zM3 9h4v12H3zM9 9h3.8v1.7h.05c.53-1 1.83-2.05 3.76-2.05C20.4 8.65 22 10.9 22 14.2V21h-4v-6.1c0-1.45-.03-3.32-2.02-3.32-2.02 0-2.33 1.58-2.33 3.21V21H9z"/></svg>
+          </span>
+          <span class="infos-contact">
+            <span class="label">LinkedIn</span>
+            <a id="lien-linkedin" href="#" target="_blank" rel="noopener"></a>
+          </span>
+        </li>
+        <!-- ResearchGate (optionnel) -->
+        <li id="li-researchgate">
+          <span class="puce" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm3.2 12.9c-.3 0-.6-.2-.9-.6l-1.3-2c-.2-.3-.4-.5-.6-.6h-.6v2.2c0 .5-.3.9-.9.9s-.9-.4-.9-.9V9.2c0-.6.3-.9.9-.9h1.9c1.6 0 2.6.9 2.6 2.3 0 1-.6 1.8-1.5 2.1.2.2.4.4.6.7l.8 1.2c.3.5.1 1.1-.4 1.3zM11.4 9.7v1.8h.8c.7 0 1.1-.4 1.1-.9s-.4-.9-1.1-.9z"/></svg>
+          </span>
+          <span class="infos-contact">
+            <span class="label">ResearchGate</span>
+            <a id="lien-researchgate" href="#" target="_blank" rel="noopener"></a>
+          </span>
+        </li>
+      </ul>
+
+      <!-- ZONE DU QR CODE -->
+      <div class="zone-qr">
+        <p class="legende">📷 Scannez ce QR code pour m'ajouter à vos contacts</p>
+        <div id="qrcode"></div>
+      </div>
+
+      <!-- BOUTONS D'ACTION -->
+      <div class="actions">
+        <button class="btn btn-principal" id="btn-partager" type="button">📤 Partager la carte</button>
+        <a class="btn btn-whatsapp" id="lien-whatsapp" href="#" target="_blank" rel="noopener noreferrer">💬 Envoyer via WhatsApp</a>
+        <button class="btn btn-secondaire" id="btn-telecharger" type="button">📥 Enregistrer le contact (.vcf)</button>
+        <a class="btn btn-secondaire" id="lien-portfolio" href="#" target="_blank" rel="noopener noreferrer">🌐 Voir le portfolio</a>
+      </div>
+    </section>
+
+    <footer class="pied">Carte de visite numérique · Ajout direct au carnet d'adresses</footer>
+  </main>
+
+  <!-- Librairie QR PARTAGÉE (à la racine du dépôt, corrigée pour les accents) -->
+  <script src="../../qrcode.min.js"></script>
+
+  <script>
+    /* ====================================================================
+       >>> ZONE À MODIFIER <<<
+       Remplissez les informations de la personne. Laissez "" (vide) tout
+       champ absent : la ligne correspondante disparaît automatiquement.
+       ==================================================================== */
+    const INFOS = {
+      prenom:           "«Prénom»",
+      nom:              "«NOM»",
+      prefixe:          "«Dr / Pr / M. / Mme (ou vide)»",
+      titrePrincipal:   "«Titre principal (ex: Médecin généraliste)»",
+      titreSecondaire:  "«Titre secondaire (ou vide)»",
+      accroche:         "«Phrase d'accroche courte (ou vide)»",
+      roleHopital:      "«Rôle / fonction (ou vide)»",
+      hopital:          "«Établissement / employeur (ou vide)»",
+      ecoleDoctorale:   "«Université / école doctorale (ou vide)»",
+      telephone1:       "«+223 ...»",
+      telephone2:       "«+223 ... (ou vide)»",
+      email:            "«email@exemple.com»",
+      portfolio:        "«https://... site ou portfolio (ou vide)»",
+      orcid:            "«https://orcid.org/0000-... (ou vide)»",
+      linkedin:         "«https://www.linkedin.com/in/... (ou vide)»",
+      researchgate:     "«https://www.researchgate.net/profile/... (ou vide)»",
+      photo:            "«photo.jpg (dans le même dossier, ou vide)»",
+      // Adresse (URL) de CETTE carte en ligne (sert aux boutons de partage) :
+      carteUrl:         "«https://VOTRE-COMPTE.github.io/DEPOT/cartes/nom-prenom/»"
+    };
+
+    /* --------------------------------------------------------------------
+       PETITS OUTILS
+       -------------------------------------------------------------------- */
+    // Un champ est "rempli" s'il n'est pas vide ET n'est pas un texte modèle «...»
+    function estRempli(v) {
+      return typeof v === "string" && v.trim() !== "" && v.trim().charAt(0) !== "«";
+    }
+    // Retire les espaces d'un numéro (garde le +) pour les liens "tel:"
+    function nettoyerTelephone(numero) { return numero.replace(/\s+/g, ""); }
+    // Affiche ou masque une ligne <li> de coordonnée
+    function basculerLigne(idLigne, afficher) {
+      const el = document.getElementById(idLigne);
+      if (el) el.style.display = afficher ? "" : "none";
+    }
+    // Nom complet en tenant compte du préfixe optionnel
+    function nomComplet() {
+      return [INFOS.prefixe, INFOS.prenom, INFOS.nom].filter(estRempli).join(" ").trim();
+    }
+    function nomCourt() {
+      return [INFOS.prefixe, INFOS.nom].filter(estRempli).join(" ").trim();
+    }
+
+    /* --------------------------------------------------------------------
+       CONSTRUCTION DE LA vCARD 3.0 (seuls les champs remplis sont inclus)
+       -------------------------------------------------------------------- */
+    function construireVCard() {
+      const lignes = ["BEGIN:VCARD", "VERSION:3.0"];
+      lignes.push("N:" + INFOS.nom + ";" + INFOS.prenom + ";;" + (estRempli(INFOS.prefixe) ? INFOS.prefixe : "") + ";");
+      lignes.push("FN:" + nomComplet());
+
+      // TITLE = titre principal (+ secondaire si présent)
+      let titre = "";
+      if (estRempli(INFOS.titrePrincipal)) titre = INFOS.titrePrincipal;
+      if (estRempli(INFOS.titreSecondaire)) titre += (titre ? " — " : "") + INFOS.titreSecondaire;
+      if (titre) lignes.push("TITLE:" + titre);
+
+      // ORG = établissement (+ université si présent)
+      let org = "";
+      if (estRempli(INFOS.hopital)) org = INFOS.hopital;
+      if (estRempli(INFOS.ecoleDoctorale)) org += (org ? ";" : "") + INFOS.ecoleDoctorale;
+      if (org) lignes.push("ORG:" + org);
+
+      if (estRempli(INFOS.telephone1)) lignes.push("TEL;TYPE=CELL:" + nettoyerTelephone(INFOS.telephone1));
+      if (estRempli(INFOS.telephone2)) lignes.push("TEL;TYPE=CELL:" + nettoyerTelephone(INFOS.telephone2));
+      if (estRempli(INFOS.email)) lignes.push("EMAIL;TYPE=INTERNET:" + INFOS.email);
+      if (estRempli(INFOS.portfolio)) lignes.push("URL:" + INFOS.portfolio);
+      if (estRempli(INFOS.orcid)) lignes.push("URL:" + INFOS.orcid);
+      if (estRempli(INFOS.linkedin)) lignes.push("URL:" + INFOS.linkedin);
+      if (estRempli(INFOS.researchgate)) lignes.push("URL:" + INFOS.researchgate);
+
+      lignes.push("END:VCARD");
+      return lignes.join("\r\n"); // \r\n requis par la norme vCard
+    }
+
+    /* --------------------------------------------------------------------
+       AFFICHAGE : remplit la page à partir de INFOS (masque le vide)
+       -------------------------------------------------------------------- */
+    function remplirAffichage() {
+      // Photo OU icône médicale
+      const photo = document.getElementById("photo");
+      const iconeMed = document.getElementById("icone-medicale");
+      if (estRempli(INFOS.photo)) {
+        photo.src = INFOS.photo;
+        photo.alt = "Photo de " + nomComplet();
+        photo.style.display = "block";
+        iconeMed.style.display = "none";
+      } else {
+        photo.style.display = "none";
+        iconeMed.style.display = "";
+      }
+
+      // Nom + titres
+      document.getElementById("nom-complet").textContent = nomComplet();
+      const tp = document.getElementById("titre-principal");
+      const ts = document.getElementById("titre-secondaire");
+      if (estRempli(INFOS.titrePrincipal)) { tp.textContent = INFOS.titrePrincipal; tp.style.display = ""; } else tp.style.display = "none";
+      if (estRempli(INFOS.titreSecondaire)) { ts.textContent = INFOS.titreSecondaire; ts.style.display = ""; } else ts.style.display = "none";
+
+      // Accroche
+      const acc = document.getElementById("accroche");
+      if (estRempli(INFOS.accroche)) { acc.textContent = INFOS.accroche; acc.style.display = ""; } else acc.style.display = "none";
+
+      // Affiliations (rôle+hôpital, école doctorale)
+      const affH = document.getElementById("affiliation-hopital");
+      const affE = document.getElementById("affiliation-ecole");
+      let auMoinsUneAffiliation = false;
+      if (estRempli(INFOS.hopital)) {
+        affH.textContent = "🏥 " + (estRempli(INFOS.roleHopital) ? INFOS.roleHopital + " – " : "") + INFOS.hopital;
+        affH.style.display = "";
+        auMoinsUneAffiliation = true;
+      } else { affH.style.display = "none"; }
+      if (estRempli(INFOS.ecoleDoctorale)) {
+        affE.textContent = "🎓 " + INFOS.ecoleDoctorale;
+        affE.style.display = "";
+        auMoinsUneAffiliation = true;
+      } else { affE.style.display = "none"; }
+      document.getElementById("affiliations").style.display = auMoinsUneAffiliation ? "" : "none";
+
+      // Téléphone 1
+      if (estRempli(INFOS.telephone1)) {
+        const t = document.getElementById("lien-tel1");
+        t.textContent = INFOS.telephone1;
+        t.href = "tel:" + nettoyerTelephone(INFOS.telephone1);
+        basculerLigne("li-tel1", true);
+      } else { basculerLigne("li-tel1", false); }
+
+      // Téléphone 2
+      if (estRempli(INFOS.telephone2)) {
+        const t = document.getElementById("lien-tel2");
+        t.textContent = INFOS.telephone2;
+        t.href = "tel:" + nettoyerTelephone(INFOS.telephone2);
+        basculerLigne("li-tel2", true);
+      } else { basculerLigne("li-tel2", false); }
+
+      // Email
+      if (estRempli(INFOS.email)) {
+        const m = document.getElementById("lien-email");
+        m.textContent = INFOS.email;
+        m.href = "mailto:" + INFOS.email;
+        basculerLigne("li-email", true);
+      } else { basculerLigne("li-email", false); }
+
+      // ORCID
+      if (estRempli(INFOS.orcid)) {
+        const o = document.getElementById("lien-orcid");
+        o.textContent = INFOS.orcid.replace("https://orcid.org/", "");
+        o.href = INFOS.orcid;
+        basculerLigne("li-orcid", true);
+      } else { basculerLigne("li-orcid", false); }
+
+      // LinkedIn
+      if (estRempli(INFOS.linkedin)) {
+        const l = document.getElementById("lien-linkedin");
+        l.textContent = INFOS.linkedin.replace(/^https?:\/\/(www\.)?linkedin\.com\//, "");
+        l.href = INFOS.linkedin;
+        basculerLigne("li-linkedin", true);
+      } else { basculerLigne("li-linkedin", false); }
+
+      // ResearchGate
+      if (estRempli(INFOS.researchgate)) {
+        const r = document.getElementById("lien-researchgate");
+        r.textContent = INFOS.researchgate.replace(/^https?:\/\/(www\.)?researchgate\.net\//, "");
+        r.href = INFOS.researchgate;
+        basculerLigne("li-researchgate", true);
+      } else { basculerLigne("li-researchgate", false); }
+
+      // Bouton portfolio (masqué si pas d'URL)
+      const btnPf = document.getElementById("lien-portfolio");
+      if (estRempli(INFOS.portfolio)) {
+        btnPf.href = INFOS.portfolio;
+        btnPf.textContent = "🌐 Voir le portfolio" + (nomCourt() ? " du " + nomCourt() : "");
+        btnPf.style.display = "";
+      } else { btnPf.style.display = "none"; }
+
+      // Libellé du bouton .vcf
+      document.getElementById("btn-telecharger").textContent =
+        "📥 Enregistrer le contact" + (nomCourt() ? " du " + nomCourt() : "");
+
+      // Lien WhatsApp (message pré-rempli + lien de la carte si disponible)
+      const lienCarte = estRempli(INFOS.carteUrl) ? " : " + INFOS.carteUrl : "";
+      document.getElementById("lien-whatsapp").href =
+        "https://wa.me/?text=" + encodeURIComponent(messagePartage() + lienCarte);
+
+      document.title = nomComplet() + " — Carte de visite";
+    }
+
+    /* --------------------------------------------------------------------
+       QR CODE (contient la vCard)
+       -------------------------------------------------------------------- */
+    function genererQRCode() {
+      const conteneur = document.getElementById("qrcode");
+      conteneur.innerHTML = "";
+      if (typeof QRCode === "undefined") {
+        conteneur.innerHTML = "<p style='font-size:0.8rem;color:#888'>QR code indisponible.</p>";
+        return;
+      }
+      new QRCode(conteneur, {
+        text: construireVCard(),
+        width: 200, height: 200,
+        colorDark: "#1A5276", colorLight: "#FFFFFF",
+        correctLevel: QRCode.CorrectLevel.M
+      });
+    }
+
+    /* --------------------------------------------------------------------
+       FICHIER CONTACT (.vcf) : création, téléchargement et partage
+       -------------------------------------------------------------------- */
+    function nomFichierVCard() {
+      return (INFOS.prenom + "_" + INFOS.nom + ".vcf").replace(/\s+/g, "_");
+    }
+    function telechargerVCard() {
+      const blob = new Blob([construireVCard()], { type: "text/vcard;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const lien = document.createElement("a");
+      lien.href = url; lien.download = nomFichierVCard();
+      document.body.appendChild(lien); lien.click(); document.body.removeChild(lien);
+      URL.revokeObjectURL(url);
+    }
+    function creerFichierVCard() {
+      return new File([construireVCard()], nomFichierVCard(), { type: "text/vcard" });
+    }
+    function messagePartage() {
+      return "Voici ma carte de visite numérique — " + nomComplet();
+    }
+    async function partagerCarte() {
+      const fichier = creerFichierVCard();
+      // 1) Partage du FICHIER .vcf (fonctionne hors-ligne pour le destinataire)
+      if (navigator.canShare && navigator.canShare({ files: [fichier] })) {
+        try { await navigator.share({ files: [fichier], title: nomComplet(), text: messagePartage() }); } catch (e) {}
+        return;
+      }
+      // 2) Repli : partage du LIEN
+      if (navigator.share && estRempli(INFOS.carteUrl)) {
+        try { await navigator.share({ title: nomComplet(), text: messagePartage(), url: INFOS.carteUrl }); } catch (e) {}
+        return;
+      }
+      // 3) Dernier repli : copie du lien
+      const btn = document.getElementById("btn-partager");
+      try {
+        await navigator.clipboard.writeText(INFOS.carteUrl);
+        const t = btn.textContent; btn.textContent = "✅ Lien copié !";
+        setTimeout(function () { btn.textContent = t; }, 2000);
+      } catch (e) { window.prompt("Copiez ce lien :", INFOS.carteUrl); }
+    }
+
+    /* --------------------------------------------------------------------
+       INITIALISATION
+       -------------------------------------------------------------------- */
+    document.addEventListener("DOMContentLoaded", function () {
+      remplirAffichage();
+      genererQRCode();
+      document.getElementById("btn-telecharger").addEventListener("click", telechargerVCard);
+      document.getElementById("btn-partager").addEventListener("click", partagerCarte);
+    });
+
+    // Service worker : rend la carte installable (Android) et hors-ligne.
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", function () {
+        navigator.serviceWorker.register("sw.js").catch(function () {});
+      });
+    }
+  </script>
+</body>
+</html>
