@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<!--
+  ============================================================================
+  GÉNÉRATEUR DE FOND D'ÉCRAN AVEC QR CODE — Dr GUINDO Aly Abdoulaye
+  ============================================================================
+  BUT : créer une image de fond d'écran (pour l'écran VERROUILLÉ de VOTRE
+  téléphone) qui contient votre QR code vCard. Ainsi, votre QR est toujours
+  prêt : vous n'avez qu'à réveiller votre téléphone et la personne en face
+  scanne directement, sans même déverrouiller l'appareil.
+
+  COMMENT L'UTILISER (sur votre téléphone) :
+    1. Ouvrez cette page dans le navigateur de votre téléphone :
+       https://drguindo.github.io/Electronique-carte-de-visite/fond-ecran-qr.html
+    2. Appuyez sur « 📥 Télécharger le fond d'écran ».
+    3. L'image est enregistrée dans vos photos.
+    4. Réglages du téléphone → Fond d'écran → écran verrouillé → choisissez
+       l'image téléchargée.
+
+  >>> POUR MODIFIER VOS INFOS : voir l'objet INFOS dans le <script> plus bas.
+      (Il doit contenir les mêmes données que votre carte index.html.)
+
+  Dépendance : qrcode.min.js (la librairie QR, dans le même dossier).
+  ============================================================================
+-->
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Générateur de fond d'écran QR — Dr GUINDO</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bleu-medical: #1A5276;
+      --bleu-clair: #2E86C1;
+      --gris-fonce: #2C3E50;
+      --gris-fond: #F4F6F7;
+      --blanc: #FFFFFF;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background-color: var(--gris-fond);
+      color: var(--gris-fonce);
+      min-height: 100vh;
+      padding: 24px 16px 48px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+    h1 {
+      font-size: 1.25rem;
+      color: var(--bleu-medical);
+      text-align: center;
+    }
+    .sous-titre {
+      font-size: 0.9rem;
+      text-align: center;
+      max-width: 460px;
+      opacity: 0.85;
+      line-height: 1.5;
+    }
+    /* Aperçu du fond d'écran (image réduite pour tenir à l'écran) */
+    #preview {
+      display: none;
+      width: auto;
+      max-width: 260px;
+      max-height: 60vh;
+      border-radius: 18px;
+      border: 1px solid var(--gris-clair, #BDC3C7);
+      box-shadow: 0 10px 30px rgba(26, 82, 118, 0.18);
+    }
+    .boutons {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      width: 100%;
+      max-width: 340px;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 15px 18px;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      font-family: inherit;
+      text-decoration: none;
+      cursor: pointer;
+      border: 2px solid transparent;
+    }
+    .btn:active { transform: scale(0.98); }
+    .btn-principal { background-color: var(--bleu-medical); color: var(--blanc); }
+    .btn-secondaire { background-color: var(--blanc); color: var(--bleu-medical); border-color: var(--bleu-medical); }
+    /* Bloc d'instructions */
+    .aide {
+      background: var(--blanc);
+      border-radius: 14px;
+      padding: 18px 20px;
+      max-width: 460px;
+      width: 100%;
+      box-shadow: 0 6px 18px rgba(26, 82, 118, 0.08);
+      font-size: 0.9rem;
+      line-height: 1.55;
+    }
+    .aide h2 { font-size: 1rem; color: var(--bleu-medical); margin-bottom: 8px; }
+    .aide ol { margin: 6px 0 12px 20px; }
+    .aide li { margin-bottom: 4px; }
+    .note { font-size: 0.82rem; opacity: 0.8; }
+    /* Le canvas de travail (pleine résolution) reste caché : on n'affiche que l'aperçu */
+    #wallpaper, #qr-holder { display: none; }
+  </style>
+</head>
+<body>
+  <h1>Générateur de fond d'écran QR</h1>
+  <p class="sous-titre">
+    Créez un fond d'écran contenant votre QR code de contact, à mettre sur
+    l'écran verrouillé de votre téléphone. Votre QR sera toujours prêt à être scanné.
+  </p>
+
+  <!-- Aperçu de l'image générée -->
+  <img id="preview" alt="Aperçu du fond d'écran" />
+
+  <!-- Zones de travail cachées -->
+  <canvas id="wallpaper"></canvas>
+  <div id="qr-holder"></div>
+
+  <div class="boutons">
+    <button class="btn btn-principal" id="btn-telecharger" type="button">📥 Télécharger le fond d'écran</button>
+    <a class="btn btn-secondaire" href="index.html">← Revenir à ma carte</a>
+  </div>
+
+  <div class="aide">
+    <h2>Comment le mettre en écran verrouillé</h2>
+    <p><strong>Sur iPhone :</strong></p>
+    <ol>
+      <li>Téléchargez l'image (bouton ci-dessus) : elle va dans « Photos ».</li>
+      <li>Ouvrez Réglages → Fond d'écran → Ajouter un nouveau fond d'écran.</li>
+      <li>Choisissez « Photos » puis l'image, puis « Définir » pour l'écran verrouillé.</li>
+    </ol>
+    <p><strong>Sur Android :</strong></p>
+    <ol>
+      <li>Téléchargez l'image : elle va dans la « Galerie ».</li>
+      <li>Ouvrez-la, menu (⋮) → « Définir comme fond d'écran ».</li>
+      <li>Choisissez « Écran de verrouillage ».</li>
+    </ol>
+    <p class="note">
+      Astuce : le QR contient toutes vos coordonnées. La personne peut les
+      enregistrer même sans connexion Internet (les données sont dans le QR).
+    </p>
+  </div>
+
+  <!-- Librairie QR (partagée avec la carte, déjà corrigée) -->
+  <script src="qrcode.min.js"></script>
+
+  <script>
+    /* ====================================================================
+       >>> ZONE À MODIFIER : mêmes informations que votre carte index.html.
+       ==================================================================== */
+    const INFOS = {
+      prenom:           "Aly Abdoulaye",
+      nom:              "GUINDO",
+      prefixe:          "Dr",
+      titrePrincipal:   "Chirurgien maxillo-facial & stomatologue",
+      titreSecondaire:  "Doctorant en informatique médicale (EDSTM / USTTB)",
+      hopital:          "Hôpital Sominé Dolo de Mopti",
+      ecoleDoctorale:   "École Doctorale des Sciences et Technologies du Mali (EDSTM)",
+      telephone1:       "+223 76 24 06 41",
+      telephone2:       "+223 66 24 06 41",
+      email:            "dralyab@gmail.com",
+      portfolio:        "https://drguindo.github.io/Mon_PortFolio_2025/",
+      orcid:            "https://orcid.org/0000-0002-4363-7277"
+    };
+
+    // Retire les espaces d'un numéro de téléphone (garde le +)
+    function nettoyerTelephone(numero) {
+      return numero.replace(/\s+/g, "");
+    }
+
+    // Construit la vCard (IDENTIQUE à celle de la carte, pour un contact cohérent)
+    function construireVCard() {
+      const nomComplet = INFOS.prefixe + " " + INFOS.prenom + " " + INFOS.nom;
+      const lignes = [
+        "BEGIN:VCARD",
+        "VERSION:3.0",
+        "N:" + INFOS.nom + ";" + INFOS.prenom + ";;" + INFOS.prefixe + ";",
+        "FN:" + nomComplet,
+        "TITLE:" + INFOS.titrePrincipal + " — " + INFOS.titreSecondaire,
+        "ORG:" + INFOS.hopital + ";" + INFOS.ecoleDoctorale,
+        "TEL;TYPE=CELL:" + nettoyerTelephone(INFOS.telephone1),
+        "TEL;TYPE=CELL:" + nettoyerTelephone(INFOS.telephone2),
+        "EMAIL;TYPE=INTERNET:" + INFOS.email,
+        "URL:" + INFOS.portfolio,
+        "URL:" + INFOS.orcid,
+        "END:VCARD"
+      ];
+      return lignes.join("\r\n");
+    }
+
+    function nomComplet() {
+      return INFOS.prefixe + " " + INFOS.prenom + " " + INFOS.nom;
+    }
+
+    // Dessine un rectangle à coins arrondis
+    function rectArrondi(ctx, x, y, w, h, r) {
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.arcTo(x + w, y, x + w, y + h, r);
+      ctx.arcTo(x + w, y + h, x, y + h, r);
+      ctx.arcTo(x, y + h, x, y, r);
+      ctx.arcTo(x, y, x + w, y, r);
+      ctx.closePath();
+    }
+
+    // Réduit la taille de police jusqu'à ce que le texte tienne dans maxLargeur
+    function ajusterPolice(ctx, texte, tailleDepart, maxLargeur, gras) {
+      let taille = tailleDepart;
+      do {
+        ctx.font = (gras ? "bold " : "") + taille + "px Arial, sans-serif";
+        if (ctx.measureText(texte).width <= maxLargeur) break;
+        taille -= 1;
+      } while (taille > 8);
+      return taille;
+    }
+
+    // Génère l'image du fond d'écran
+    function genererFondEcran() {
+      // 1) Générer le QR (vCard) dans un conteneur caché
+      const holder = document.getElementById("qr-holder");
+      holder.innerHTML = "";
+      new QRCode(holder, {
+        text: construireVCard(),
+        width: 760,
+        height: 760,
+        colorDark: "#1A5276",
+        colorLight: "#FFFFFF",
+        correctLevel: QRCode.CorrectLevel.M
+      });
+      const qrCanvas = holder.querySelector("canvas");
+
+      // 2) Créer le canvas à la résolution de l'écran (forcé en portrait)
+      const dpr = window.devicePixelRatio || 1;
+      let W = Math.round((window.screen.width || 1080) * dpr);
+      let H = Math.round((window.screen.height || 1920) * dpr);
+      if (W > H) { const t = W; W = H; H = t; }   // toujours en portrait
+      const canvas = document.getElementById("wallpaper");
+      canvas.width = W;
+      canvas.height = H;
+      const ctx = canvas.getContext("2d");
+
+      // 3) Fond : dégradé bleu médical
+      const grad = ctx.createLinearGradient(0, 0, 0, H);
+      grad.addColorStop(0, "#1A5276");
+      grad.addColorStop(1, "#2E86C1");
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, W, H);
+
+      // 4) Carte blanche centrale
+      const cardW = W * 0.84;
+      const pad = W * 0.06;
+      const qrSize = cardW - pad * 2;
+      const nameSize = ajusterPolice(ctx, nomComplet(), W * 0.055, cardW - pad * 2, true);
+      const subSize = ajusterPolice(ctx, INFOS.titrePrincipal, W * 0.034, cardW - pad * 2, false);
+      const hintSize = W * 0.032;
+      const gap = W * 0.045;
+
+      const cardH = pad + nameSize + gap * 0.4 + subSize + gap + qrSize + gap * 0.8 + hintSize + pad;
+      const cardX = (W - cardW) / 2;
+      const cardY = (H - cardH) / 2 + H * 0.02; // légèrement sous le centre (sous l'horloge)
+
+      rectArrondi(ctx, cardX, cardY, cardW, cardH, W * 0.045);
+      ctx.fillStyle = "#FFFFFF";
+      ctx.fill();
+
+      // 5) Contenu : nom, titre, QR, invitation
+      ctx.textAlign = "center";
+      let y = cardY + pad + nameSize;
+      ctx.fillStyle = "#1A5276";
+      ctx.font = "bold " + nameSize + "px Arial, sans-serif";
+      ctx.fillText(nomComplet(), W / 2, y);
+
+      y += gap * 0.4 + subSize;
+      ctx.fillStyle = "#2C3E50";
+      ctx.font = subSize + "px Arial, sans-serif";
+      ctx.fillText(INFOS.titrePrincipal, W / 2, y);
+
+      y += gap;
+      if (qrCanvas) {
+        ctx.drawImage(qrCanvas, (W - qrSize) / 2, y, qrSize, qrSize);
+      }
+      y += qrSize + gap * 0.8 + hintSize * 0.8;
+      ctx.fillStyle = "#2C3E50";
+      ctx.font = hintSize + "px Arial, sans-serif";
+      ctx.fillText("Scannez pour enregistrer mon contact", W / 2, y);
+
+      // 6) Aperçu affiché
+      const preview = document.getElementById("preview");
+      preview.src = canvas.toDataURL("image/png");
+      preview.style.display = "block";
+    }
+
+    // Télécharge l'image du fond d'écran
+    function telechargerFondEcran() {
+      const canvas = document.getElementById("wallpaper");
+      const lien = document.createElement("a");
+      lien.href = canvas.toDataURL("image/png");
+      lien.download = ("Fond_ecran_QR_" + INFOS.prenom + "_" + INFOS.nom + ".png").replace(/\s+/g, "_");
+      document.body.appendChild(lien);
+      lien.click();
+      document.body.removeChild(lien);
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+      genererFondEcran();
+      document
+        .getElementById("btn-telecharger")
+        .addEventListener("click", telechargerFondEcran);
+    });
+  </script>
+</body>
+</html>

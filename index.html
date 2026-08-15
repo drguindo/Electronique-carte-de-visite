@@ -640,31 +640,57 @@
     }
 
     /* ====================================================================
+       FONCTION : crée le fichier contact (.vcf) en mémoire, prêt à être
+       partagé (objet "File" reconnu par le menu de partage du téléphone).
+       ==================================================================== */
+    function creerFichierVCard() {
+      const nomFichier = (INFOS.prenom + "_" + INFOS.nom + ".vcf").replace(/\s+/g, "_");
+      return new File([construireVCard()], nomFichier, { type: "text/vcard" });
+    }
+
+    /* ====================================================================
        FONCTION : partage la carte via le menu natif du téléphone.
-       - Sur mobile : ouvre le menu de partage (WhatsApp, SMS, Bluetooth,
-         AirDrop, e-mail...). La personne reçoit directement le LIEN de la
-         carte : rien à scanner, rien à installer.
-       - Sur ordinateur (pas de menu natif) : copie le lien dans le
-         presse-papiers et le confirme brièvement sur le bouton.
+       On PRIVILÉGIE l'envoi du FICHIER contact (.vcf) : le destinataire
+       reçoit un vrai fichier qu'il peut enregistrer dans ses contacts
+       MÊME SANS CONNEXION INTERNET (le fichier est déjà sur son téléphone).
+       Ordre de priorité :
+         1) Partager le fichier .vcf (idéal, hors-ligne côté destinataire)
+         2) Sinon, partager le LIEN de la carte (nécessite Internet)
+         3) Sinon (ordinateur), copier le lien dans le presse-papiers
        ==================================================================== */
     async function partagerCarte() {
-      const donnees = {
-        title: INFOS.prefixe + " " + INFOS.prenom + " " + INFOS.nom,
-        text: messagePartage(),
-        url: INFOS.carteUrl
-      };
+      const nomComplet = INFOS.prefixe + " " + INFOS.prenom + " " + INFOS.nom;
+      const fichier = creerFichierVCard();
 
-      // 1) Menu de partage natif (disponible sur la plupart des téléphones)
-      if (navigator.share) {
+      // 1) Partage du FICHIER .vcf (fonctionne hors-ligne pour le destinataire)
+      if (navigator.canShare && navigator.canShare({ files: [fichier] })) {
         try {
-          await navigator.share(donnees);
+          await navigator.share({
+            files: [fichier],
+            title: nomComplet,
+            text: messagePartage()
+          });
         } catch (e) {
-          // L'utilisateur a simplement annulé le partage : on ne fait rien.
+          // Partage annulé par l'utilisateur : on ne fait rien.
         }
         return;
       }
 
-      // 2) Repli : copie le lien dans le presse-papiers (ordinateurs)
+      // 2) Repli : partage du LIEN via le menu natif
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: nomComplet,
+            text: messagePartage(),
+            url: INFOS.carteUrl
+          });
+        } catch (e) {
+          // Partage annulé : on ne fait rien.
+        }
+        return;
+      }
+
+      // 3) Dernier repli (ordinateur) : copie le lien dans le presse-papiers
       const btn = document.getElementById("btn-partager");
       try {
         await navigator.clipboard.writeText(INFOS.carteUrl);
@@ -672,7 +698,6 @@
         btn.textContent = "✅ Lien copié !";
         setTimeout(function () { btn.textContent = texteInitial; }, 2000);
       } catch (e) {
-        // 3) Dernier repli : on affiche le lien à copier manuellement
         window.prompt("Copiez ce lien pour partager votre carte :", INFOS.carteUrl);
       }
     }

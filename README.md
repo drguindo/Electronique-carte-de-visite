@@ -17,15 +17,30 @@ Lorsqu'une personne ouvre la page (sur ordinateur ou téléphone), elle peut :
   smartphone (iPhone ou Android) propose directement **« Ajouter aux contacts »**.
 - 📥 **Télécharger la carte (`.vcf`)** → le fichier contact est enregistré
   dans le téléphone.
+- 📤 **Partager la carte** via le bouton « Partager » : le bouton envoie en
+  priorité le **fichier contact `.vcf`** par le menu du téléphone (WhatsApp,
+  message, e-mail, AirDrop…). Le destinataire peut donc **enregistrer le
+  contact même sans connexion Internet**. Si l'appareil ne sait pas partager de
+  fichier, c'est le **lien** de la carte qui est partagé.
 - 📞 **Appeler** ou ✉️ **envoyer un e-mail** en touchant les coordonnées.
 - 🌐 Ouvrir le **portfolio** dans un nouvel onglet.
+
+### Bonus : QR code en fond d'écran verrouillé
+
+La page **`fond-ecran-qr.html`** génère une image (fond d'écran) contenant
+votre QR code. En la définissant comme **écran verrouillé** de votre téléphone,
+votre QR est toujours prêt : il suffit de réveiller l'écran pour qu'on le scanne.
+
+> 🔗 https://drguindo.github.io/Electronique-carte-de-visite/fond-ecran-qr.html
 
 ---
 
 ## 2. Caractéristiques techniques
 
-- **Un seul fichier** : `index.html` (tout le HTML, le CSS et le JavaScript
-  sont à l'intérieur).
+- **La carte est un seul fichier** : `index.html` (tout le HTML, le CSS et le
+  JavaScript sont à l'intérieur). Deux fichiers accompagnent le projet :
+  `fond-ecran-qr.html` (le générateur de fond d'écran) et `qrcode.min.js` (la
+  librairie QR partagée par le générateur).
 - **100 % hors-ligne** : la librairie de génération de QR code (`qrcodejs`,
   licence MIT) est intégrée directement dans le fichier. Aucune connexion
   Internet n'est nécessaire pour afficher le QR code.
