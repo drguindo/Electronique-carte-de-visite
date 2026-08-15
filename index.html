@@ -419,7 +419,7 @@
              (WhatsApp, SMS, Bluetooth, AirDrop, e-mail...). Le destinataire n'a
              rien à scanner ni à installer : il reçoit directement le lien. -->
         <button class="btn btn-principal" id="btn-partager" type="button">
-          📤 Partager ma carte
+          📤 Partager la carte
         </button>
         <!-- Envoie le lien de la carte via WhatsApp (message pré-rempli) -->
         <a class="btn btn-whatsapp" id="lien-whatsapp" href="#" target="_blank" rel="noopener noreferrer">
@@ -427,11 +427,11 @@
         </a>
         <!-- Télécharge le fichier .vcf (fiche contact) -->
         <button class="btn btn-secondaire" id="btn-telecharger" type="button">
-          📥 Enregistrer mon contact (.vcf)
+          📥 Enregistrer le contact (.vcf)
         </button>
         <!-- Ouvre le portfolio dans un nouvel onglet -->
         <a class="btn btn-secondaire" id="lien-portfolio" href="#" target="_blank" rel="noopener noreferrer">
-          🌐 Voir mon portfolio
+          🌐 Voir le portfolio
         </a>
       </div>
     </section>
@@ -565,6 +565,14 @@
 
       // Lien portfolio (s'ouvre dans un nouvel onglet, déjà configuré dans le HTML)
       document.getElementById("lien-portfolio").href = INFOS.portfolio;
+
+      // Libellés personnalisés avec le nom (évite l'ambiguïté du "mon" côté
+      // destinataire). Construits à partir de INFOS : un seul endroit à modifier.
+      const nomCourt = INFOS.prefixe + " " + INFOS.nom; // ex. "Dr GUINDO"
+      document.getElementById("lien-portfolio").textContent =
+        "🌐 Voir le portfolio du " + nomCourt;
+      document.getElementById("btn-telecharger").textContent =
+        "📥 Enregistrer le contact du " + nomCourt;
 
       // Lien WhatsApp : ouvre WhatsApp avec un message pré-rempli contenant
       // le lien de la carte. La personne choisit le contact et envoie.
