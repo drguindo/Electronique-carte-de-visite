@@ -743,6 +743,19 @@
         .getElementById("btn-partager")
         .addEventListener("click", partagerCarte);
     });
+
+    /* ====================================================================
+       SERVICE WORKER : rend la carte installable sur Android (Chrome propose
+       alors « Installer l'application ») et la fait fonctionner hors-ligne.
+       Ne s'active qu'en ligne (HTTPS) ; ignoré si on ouvre le fichier en local.
+       ==================================================================== */
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", function () {
+        navigator.serviceWorker.register("sw.js").catch(function () {
+          // En local (file://) l'enregistrement échoue : sans conséquence.
+        });
+      });
+    }
   </script>
 </body>
 </html>
