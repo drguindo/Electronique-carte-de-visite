@@ -14,7 +14,7 @@
    ============================================================================ */
 
 // On change ce numéro de version pour forcer la mise à jour du cache.
-const CACHE = "carte-guindo-v1";
+const CACHE = "carte-guindo-v2";
 
 // Liste des fichiers à mettre en cache pour un fonctionnement hors-ligne.
 const FICHIERS = [

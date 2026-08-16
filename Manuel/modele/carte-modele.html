@@ -533,15 +533,24 @@
     }
     async function partagerCarte() {
       const fichier = creerFichierVCard();
-      // 1) Partage du FICHIER .vcf (fonctionne hors-ligne pour le destinataire)
+      // 1) On tente le partage du FICHIER .vcf (fonctionne sur iPhone).
+      //    Sur Android, Chrome refuse les .vcf (canShare ment) : on bascule
+      //    alors automatiquement sur le partage du LIEN.
       if (navigator.canShare && navigator.canShare({ files: [fichier] })) {
-        try { await navigator.share({ files: [fichier], title: nomComplet(), text: messagePartage() }); } catch (e) {}
-        return;
+        try {
+          await navigator.share({ files: [fichier], title: nomComplet(), text: messagePartage() });
+          return;
+        } catch (e) {
+          if (e && e.name === "AbortError") return; // annulé volontairement
+          // sinon (Android refuse le .vcf) : on continue vers le lien
+        }
       }
-      // 2) Repli : partage du LIEN
+      // 2) Repli : partage du LIEN (accepté par tous les téléphones)
       if (navigator.share && estRempli(INFOS.carteUrl)) {
-        try { await navigator.share({ title: nomComplet(), text: messagePartage(), url: INFOS.carteUrl }); } catch (e) {}
-        return;
+        try {
+          await navigator.share({ title: nomComplet(), text: messagePartage(), url: INFOS.carteUrl });
+          return;
+        } catch (e) { if (e && e.name === "AbortError") return; }
       }
       // 3) Dernier repli : copie du lien
       const btn = document.getElementById("btn-partager");

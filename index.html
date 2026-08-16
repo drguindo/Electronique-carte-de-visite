@@ -686,7 +686,12 @@
       const nomComplet = INFOS.prefixe + " " + INFOS.prenom + " " + INFOS.nom;
       const fichier = creerFichierVCard();
 
-      // 1) Partage du FICHIER .vcf (fonctionne hors-ligne pour le destinataire)
+      // 1) On tente d'abord de partager le FICHIER .vcf (idéal : hors-ligne pour
+      //    le destinataire). Cela fonctionne sur iPhone.
+      //    ATTENTION : sur Android, Chrome REFUSE les fichiers .vcf. Pire,
+      //    navigator.canShare() renvoie "true" à tort, puis le partage échoue
+      //    avec "Permission denied". On bascule donc automatiquement sur le
+      //    partage du LIEN si le partage du fichier échoue.
       if (navigator.canShare && navigator.canShare({ files: [fichier] })) {
         try {
           await navigator.share({
@@ -694,13 +699,16 @@
             title: nomComplet,
             text: messagePartage()
           });
+          return; // Partage du fichier réussi (cas iPhone).
         } catch (e) {
-          // Partage annulé par l'utilisateur : on ne fait rien.
+          // L'utilisateur a annulé volontairement : on s'arrête là.
+          if (e && e.name === "AbortError") return;
+          // Sinon (ex. Android qui refuse le .vcf) : on continue vers le lien.
         }
-        return;
       }
 
-      // 2) Repli : partage du LIEN via le menu natif
+      // 2) Repli : partage du LIEN de la carte (accepté par TOUS les téléphones,
+      //    Android compris).
       if (navigator.share) {
         try {
           await navigator.share({
@@ -708,13 +716,13 @@
             text: messagePartage(),
             url: INFOS.carteUrl
           });
+          return;
         } catch (e) {
-          // Partage annulé : on ne fait rien.
+          if (e && e.name === "AbortError") return;
         }
-        return;
       }
 
-      // 3) Dernier repli (ordinateur) : copie le lien dans le presse-papiers
+      // 3) Dernier repli (ordinateur sans menu natif) : copie le lien.
       const btn = document.getElementById("btn-partager");
       try {
         await navigator.clipboard.writeText(INFOS.carteUrl);

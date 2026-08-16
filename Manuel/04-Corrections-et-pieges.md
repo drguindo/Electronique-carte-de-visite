@@ -36,6 +36,22 @@ toutes ces corrections : si vous partez du modèle, vous êtes tranquille.
 - Replis automatiques : si l'appareil ne sait pas partager un fichier → partage
   du **lien** ; sur ordinateur → **copie** du lien dans le presse-papiers.
 
+## 4 bis. Bouton « Partager » sans effet sur Android (fichier .vcf refusé)
+- **Symptôme** : le bouton « Partager la carte » fonctionne sur **iPhone** mais
+  **ne fait rien sur Android**.
+- **Cause** : Chrome/Android **refuse les fichiers `.vcf`** dans l'API de partage.
+  Piège : `navigator.canShare({files:[...]})` renvoie **`true` à tort**, puis le
+  partage échoue avec « Permission denied ». iPhone (Safari) n'a pas cette
+  restriction, d'où la différence.
+- **Correction** : on **tente** le partage du fichier ; s'il échoue (autre chose
+  qu'une annulation volontaire `AbortError`), on **bascule automatiquement sur le
+  partage du LIEN** (accepté par tous les téléphones). Le modèle applique déjà
+  cette logique.
+- **Conséquence** : sur Android, « Partager » envoie le **lien** (le destinataire
+  ouvre la carte puis enregistre le contact) ; sur iPhone, il envoie directement
+  le **fichier `.vcf`**. Le bouton « Enregistrer le contact (.vcf) » reste
+  disponible partout pour récupérer le fichier.
+
 ## 5. Icône d'application (ajout à l'écran d'accueil)
 - Il faut de **vrais fichiers PNG** : `icon-180.png` (iPhone), `icon-192.png` et
   `icon-512.png` (Android + aperçu de partage). Un SVG ne suffit pas pour iPhone.
