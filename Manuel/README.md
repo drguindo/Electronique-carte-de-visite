@@ -81,3 +81,12 @@ la personne**. L'IA génère alors tous les fichiers de la carte automatiquement
 2. Pour chaque nouvelle personne : remplissez **[`01-Fiche-de-collecte.md`](01-Fiche-de-collecte.md)**,
    puis utilisez **[`02-Prompt-IA.md`](02-Prompt-IA.md)**.
 3. En cas de doute technique, consultez **[`04-Corrections-et-pieges.md`](04-Corrections-et-pieges.md)**.
+
+---
+
+## Statut du projet
+
+- **Dernier audit fonctionnel : 16/08/2026** — tout est opérationnel en ligne
+  (carte, générateur de fond d'écran, modèle, PWA/service worker). Détails des
+  vérifications et des petits correctifs dans
+  [`04-Corrections-et-pieges.md`](04-Corrections-et-pieges.md) (point 12).

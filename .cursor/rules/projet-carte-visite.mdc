@@ -1,0 +1,55 @@
+---
+description: Mémoire du projet « Carte de visite électronique » — contexte, structure, décisions et pièges déjà résolus. À lire avant toute modification.
+alwaysApply: true
+---
+
+# Mémoire du projet — Carte de visite numérique (Dr GUINDO)
+
+Projet perso de **carte de visite numérique** (une page HTML autonome), hébergée
+sur **GitHub Pages**, servant aussi de **fabrique** pour créer des cartes pour
+des collègues. Répondre à l'utilisateur **en français**, avec pédagogie (niveau
+débutant/intermédiaire, éviter le jargon).
+
+## Dépôt & URLs
+- Repo : `https://github.com/drguindo/Electronique-carte-de-visite.git` (branche `main`).
+- Carte en ligne : `https://drguindo.github.io/Electronique-carte-de-visite/`.
+- Portfolio séparé : `https://drguindo.github.io/Mon_PortFolio_2025/`.
+- Attention à l'orthographe : `visite` (et non `viste`).
+
+## Structure des fichiers
+- `index.html` — la carte principale (CSS + JS inline ; `INFOS` = objet unique à modifier).
+- `qrcode.min.js` — librairie QR **partagée et corrigée** (voir piège n°1).
+- `fond-ecran-qr.html` — générateur de fond d'écran verrouillé avec QR (canvas 2160×3840).
+- `manifest.webmanifest`, `sw.js`, `icon-180/192/512.png` — PWA (installable + hors-ligne).
+- `Manuel/` — fabrique de cartes : `README.md`, `01`→`06` (.md), et `modele/`
+  (`carte-modele.html`, `manifest.webmanifest`, `sw.js`, `generer-icones.md`).
+
+## Décisions clés (ne pas casser)
+- **Tout hors-ligne** : QR généré localement (pas de CDN). Librairie chargée en
+  relatif dans le modèle (`../../qrcode.min.js`).
+- **vCard VERSION:3.0**, lignes en `\r\n`, seuls les champs remplis inclus.
+  Contient nom, titres, tel×2, email, ORG (hôpital + école doctorale), URL, ORCID.
+- **Bouton Partager** : tente le fichier `.vcf` (iPhone) → repli automatique sur
+  le **lien** si échec (Android refuse le `.vcf`) → repli copie du lien (PC).
+- **Libellés de boutons** avec le nom (« du Dr NOM »), pas de « mon » ambigu.
+- **Chemins toujours relatifs** (jamais commençant par `/`) car cartes en sous-dossier.
+
+## Pièges DÉJÀ résolus (détails dans `Manuel/04-Corrections-et-pieges.md`)
+1. QR vide avec accents → `qrcode.min.js` patché (`b=[]` dans la boucle). Ne jamais
+   remplacer par une version CDN.
+2. Android « Partager » sans effet → fichier `.vcf` refusé, `canShare` ment ;
+   repli sur le lien (déjà en place).
+3. Android non installable sans `sw.js` (service worker requis par Chrome).
+4. iPhone : icônes PNG réelles nécessaires (SVG insuffisant).
+5. PWA meta : mettre `mobile-web-app-capable` **ET** `apple-mobile-web-app-capable`.
+
+## Environnement Windows / PowerShell
+- Enchaîner avec `;` (pas `&&`).
+- `git add` **fichiers précis** (éviter `git add .`).
+- Après `push`, attendre 1–2 min puis `Ctrl`+`F5`. Incrémenter la version du cache
+  dans `sw.js` (`carte-guindo-vN`) quand on modifie des fichiers mis en cache.
+
+## Dernier état connu
+- **16/08/2026** : audit complet OK (carte, générateur, modèle, PWA en ligne).
+  SW en `carte-guindo-v2`. Petits correctifs appliqués (meta PWA moderne + favicon
+  du générateur).

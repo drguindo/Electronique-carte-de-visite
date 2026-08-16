@@ -103,6 +103,15 @@ toutes ces corrections : si vous partez du modèle, vous êtes tranquille.
 - Si vous **renommez** le dépôt, toutes les adresses changent : pensez à mettre à
   jour `carteUrl` et les balises `og:*` des cartes concernées.
 
+## 12. Petits points relevés à l'audit (déjà corrigés)
+- **Balise PWA moderne** : Chrome affiche un avertissement si seule
+  `apple-mobile-web-app-capable` est présente. On ajoute donc **les deux** :
+  `<meta name="mobile-web-app-capable" content="yes">` **et**
+  `<meta name="apple-mobile-web-app-capable" content="yes">`. Le modèle l'inclut.
+- **Erreur 404 `favicon.ico`** : une page sans `<link rel="icon">` provoque un
+  404 discret dans la console. On ajoute une icône (`icon-192.png`) dans le
+  `<head>`. Sans conséquence visible, mais console propre.
+
 ---
 
 ## En cas de doute : repartez du modèle
